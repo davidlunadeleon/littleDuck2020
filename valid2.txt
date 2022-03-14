@@ -1,0 +1,14 @@
+program valid1;
+
+var	a, b, c: int;
+	d, e, f: float;
+
+{
+	a = 1;
+	b = a + (1 * 3 / (10 / 2));
+	print(b <> a);
+	print(a < b);
+	d = 431.123;
+	print("This is a test");
+	print("This is another test, with the valur of d being: ", d);
+}
