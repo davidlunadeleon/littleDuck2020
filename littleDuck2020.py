@@ -7,6 +7,11 @@ import argparse
 import ply.lex as lex
 import ply.yacc as yacc
 
+# ANTLR4
+import antlr4
+from dist.LittleDuck2020Lexer import LittleDuck2020Lexer
+from dist.LittleDuck2020Parser import LittleDuck2020Parser
+
 # Misc
 import sys
 
@@ -43,6 +48,7 @@ t_EXPOP = r"[\+-]"
 t_LITERAL = r"\".*\""
 t_TERMOP = r"[\*/]"
 
+
 def t_FLOAT(t):
     r"\d+\.\d+"
     t.value = float(t.value)
@@ -74,8 +80,6 @@ def t_error(t):
     t.lexer.skip(1)
 
 
-lexer = lex.lex()
-
 # Parser
 
 
@@ -85,10 +89,12 @@ def p_p(p):
         | pprime1 block
     """
 
+
 def p_pprime1(p):
     """
     pprime1  : PROGRAM ID ';'
     """
+
 
 def p_empty(p):
     """
@@ -105,13 +111,15 @@ def p_vars(p):
 def p_varlists(p):
     """
     varlists    : varlistsprime1 varlists
-                | varlistsprime1 
+                | varlistsprime1
     """
+
 
 def p_varlistsprime1(p):
     """
     varlistsprime1   : idlist ':' type ';'
     """
+
 
 def p_idlist(p):
     """
@@ -146,11 +154,13 @@ def p_assignment(p):
     assignment  : ID ASSIGN expression ';'
     """
 
+
 def p_exp(p):
     """
     exp         : term EXPOP exp
                 | term
     """
+
 
 def p_expression(p):
     """
@@ -158,9 +168,10 @@ def p_expression(p):
                 | exp
     """
 
+
 def p_term(p):
     """
-    term    : factor TERMOP term 
+    term    : factor TERMOP term
             | factor
     """
 
@@ -171,6 +182,7 @@ def p_type(p):
                 | T_INT
     """
 
+
 def p_varcte(p):
     """
     varcte     : FLOAT
@@ -178,16 +190,19 @@ def p_varcte(p):
                | INT
     """
 
+
 def p_conditional(p):
     """
     conditional : IF '(' expression ')' block else ';'
     """
+
 
 def p_else(p):
     """
     else    : ELSE block
             | empty
     """
+
 
 def p_factor(p):
     """
@@ -196,10 +211,12 @@ def p_factor(p):
             | varcte
     """
 
+
 def p_writing(p):
     """
     writing : PRINT '(' writinglist ')' ';'
     """
+
 
 def p_writinglist(p):
     """
@@ -209,17 +226,16 @@ def p_writinglist(p):
                 | LITERAL
     """
 
+
 def p_error(p):
     print("Syntax error at token", p.type, "at line", p.lineno)
 
-
-parser = yacc.yacc()
 
 # Argument parser set up
 argparser = argparse.ArgumentParser(description="LittleDuck 2020 lexer+parser")
 argparser.add_argument(
     "generator",
-    choices=['PLY', 'ANTLR4'],
+    choices=["PLY", "ANTLR4"],
     help="whether to use PLY or ANTLR4 as the lexer+parser generator tool",
     type=str,
 )
@@ -233,5 +249,13 @@ argparser.add_argument(
 
 if __name__ == "__main__":
     args = argparser.parse_args()
-    with open(args.file, mode="r") as file:
-        parser.parse(file.read(), lexer=lexer)
+    if args.generator == "PLY":
+        with open(args.file, mode="r") as file:
+            lexer = lex.lex()
+            parser = yacc.yacc()
+            parser.parse(file.read(), lexer=lexer)
+    elif args.generator == "ANTLR4":
+        inputSteam = antlr4.FileStream(args.file)
+        lexer = LittleDuck2020Lexer(inputSteam)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = LittleDuck2020Parser(stream)
