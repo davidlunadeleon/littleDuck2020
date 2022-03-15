@@ -38,14 +38,10 @@ tokens = [
 
 # Regular expressions rules
 t_ASSIGN = r"="
+t_COMPOP = r"(<>|<|>)"
+t_EXPOP = r"[\+-]"
 t_LITERAL = r"\".*\""
-
-
-def t_COMPOP(t):
-    r"(<>|<|>)"
-    t.type = "COMPOP"
-    return t
-
+t_TERMOP = r"[\*/]"
 
 def t_FLOAT(t):
     r"\d+\.\d+"
@@ -56,18 +52,6 @@ def t_FLOAT(t):
 def t_ID(t):
     r"[a-zA-Z]\w*"
     t.type = reserved.get(t.value, "ID")
-    return t
-
-
-def t_TERMOP(t):
-    r"[*/]"
-    t.type = "TERMOP"
-    return t
-
-
-def t_EXPOP(t):
-    r"[\+-]"
-    t.type = "EXPOP"
     return t
 
 
@@ -165,33 +149,33 @@ def p_assignment(p):
 def p_exp(p):
     """
     exp         : term EXPOP exp
-    exp         : term
+                | term
     """
 
 def p_expression(p):
     """
     expression  : exp COMPOP exp
-    expression  : exp
+                | exp
     """
 
 def p_term(p):
     """
-    term    : term TERMOP factor
-    term    : factor
+    term    : factor TERMOP term 
+            | factor
     """
 
 
 def p_type(p):
     """
     type        : T_FLOAT
-    type        : T_INT
+                | T_INT
     """
 
 def p_varcte(p):
     """
     varcte     : FLOAT
-    varcte     : ID
-    varcte     : INT
+               | ID
+               | INT
     """
 
 def p_conditional(p):
