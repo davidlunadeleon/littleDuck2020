@@ -97,10 +97,14 @@ lexer = lex.lex()
 
 def p_p(p):
     """
-    p   : PROGRAM ID ';' vars block
-        | PROGRAM ID ';' block
+    p   : pprime1 vars block
+        | pprime1 block
     """
 
+def p_pprime1(p):
+    """
+    pprime1  : PROGRAM ID ';'
+    """
 
 def p_empty(p):
     """
@@ -110,16 +114,20 @@ def p_empty(p):
 
 def p_vars(p):
     """
-    vars    : VAR idlist ':' type ';' varlists
+    vars    : VAR varlists
     """
 
 
 def p_varlists(p):
     """
-    varlists    : idlist ':' type ';' varlists
-                | empty
+    varlists    : varlistsprime1 varlists
+                | varlistsprime1 
     """
 
+def p_varlistsprime1(p):
+    """
+    varlistsprime1   : idlist ':' type ';'
+    """
 
 def p_idlist(p):
     """
@@ -154,35 +162,42 @@ def p_assignment(p):
     assignment  : ID ASSIGN expression ';'
     """
 
-
-def p_binary_operators(p):
+def p_exp(p):
     """
     exp         : term EXPOP exp
-    expression  : exp COMPOP exp
-    term        : term TERMOP factor
-    """
-
-
-def p_simple(p):
-    """
-    expression  : exp
     exp         : term
-    term        : factor
+    """
+
+def p_expression(p):
+    """
+    expression  : exp COMPOP exp
+    expression  : exp
+    """
+
+def p_term(p):
+    """
+    term    : term TERMOP factor
+    term    : factor
+    """
+
+
+def p_type(p):
+    """
     type        : T_FLOAT
     type        : T_INT
-    var_cte     : FLOAT
-    var_cte     : ID
-    var_cte     : INT
-    writinglist : LITERAL
-    writinglist : expression
     """
 
+def p_varcte(p):
+    """
+    varcte     : FLOAT
+    varcte     : ID
+    varcte     : INT
+    """
 
 def p_conditional(p):
     """
     conditional : IF '(' expression ')' block else ';'
     """
-
 
 def p_else(p):
     """
@@ -190,29 +205,25 @@ def p_else(p):
             | empty
     """
 
-
 def p_factor(p):
     """
     factor  : '(' expression ')'
-            | TERMOP var_cte
-            | var_cte
+            | TERMOP varcte
+            | varcte
     """
-
 
 def p_writing(p):
     """
-    writing : PRINT '(' expression writinglist ')' ';'
-    writing : PRINT '(' LITERAL writinglist ')' ';'
+    writing : PRINT '(' writinglist ')' ';'
     """
-
 
 def p_writinglist(p):
     """
-    writinglist : ',' expression writinglist
-                | ',' LITERAL writinglist
-                | empty
+    writinglist : expression ',' writinglist
+                | LITERAL ',' writinglist
+                | expression
+                | LITERAL
     """
-
 
 def p_error(p):
     print("Syntax error at token", p.type, "at line", p.lineno)
@@ -223,11 +234,17 @@ parser = yacc.yacc()
 # Argument parser set up
 argparser = argparse.ArgumentParser(description="LittleDuck 2020 lexer+parser")
 argparser.add_argument(
+    "generator",
+    choices=['PLY', 'ANTLR4'],
+    help="whether to use PLY or ANTLR4 as the lexer+parser generator tool",
+    type=str,
+)
+argparser.add_argument(
     "file",
+    default=sys.stdin,
+    help="LittleDuck 2020 source file to read",
     metavar="F",
     type=str,
-    help="LittleDuck 2020 source file to read",
-    default=sys.stdin,
 )
 
 if __name__ == "__main__":
