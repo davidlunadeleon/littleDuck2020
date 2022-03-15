@@ -19,7 +19,7 @@ ID		: [a-zA-Z][a-zA-Z0-9_]* ;
 INT		: DIGIT+ ;
 LITERAL	: '"' .*? '"' ;
 TERMOP	: [*/] ;
-WS		: [ \t] -> skip;
+WS		: [ \t\n] -> skip;
 
 // Parser rules
 p	: pprime1 myvars block

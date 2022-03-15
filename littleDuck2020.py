@@ -259,3 +259,5 @@ if __name__ == "__main__":
         lexer = LittleDuck2020Lexer(inputSteam)
         stream = antlr4.CommonTokenStream(lexer)
         parser = LittleDuck2020Parser(stream)
+        tree = parser.p()
+        print(tree.toStringTree(recog=parser))
